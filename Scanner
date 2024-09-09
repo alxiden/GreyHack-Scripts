@@ -1,0 +1,24 @@
+metaxploit = include_lib("/lib/metaxploit.so")
+//MetaLib = include_lib()
+
+address = params[0]
+if params.len == 1 then
+	port = null
+	net_session = metaxploit.net_use(address)
+else
+	port = params[1].to_int
+	net_session = metaxploit.net_use(address, port)
+end if
+
+//Connects to the sesstion
+if not net_session then exit("Error: No Connection")
+
+metaLib = net_session.dump_lib //gets the libary for scanning
+print("----Scanning----")
+scans = metaxploit.scan(metaLib) //scans the libary
+for i in scans
+		memory_scan = metaxploit.scan_address(metaLib, i)
+		print(i + " " + memory_scan)
+end for
+
+exit("----Scan Complete----")
