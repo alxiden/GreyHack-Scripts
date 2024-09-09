@@ -1,0 +1,60 @@
+metaxploit = include_lib("/lib/metaxploit.so")
+
+address = params[0]
+exp = params[2]
+key = params[3]
+
+if params.len == 5 then //looks to see if a password is provided
+	password = params[4] 
+else
+	password = null
+end if
+
+if params[1] == "router" then
+	net_session = metaxploit.net_use(address)
+else
+	port = params[1].to_int
+	net_session = metaxploit.net_use(address, port)
+end if
+
+if not net_session then exit("No Connection")
+
+metaLib = net_session.dump_lib
+//print("----Session Connected----")
+
+if password == null then //if not a password reset, preforms buffer overflow
+	//print("----Performing Exsploit -----")
+	result = metaLib.overflow(exp, key)
+	if result then
+		print(typeof(result))
+else //Preforms password reset
+	result = metaLib.overflow(exp, key, password)
+	if result then
+		print("New Password: " + password) //Prints password
+end if
+
+print(result)
+
+type = typeof(result) //shows type of access gained
+print(type)
+
+if type != "shell" and type != "file" then exit("Type not supported!")
+end if
+
+type = typeof(result)
+
+if type == "shell" then result.start_terminal //Opens a shell terminal
+end if
+
+type = typeof(result)
+
+if type == "computer" then
+	password_file = result.File("/etc/passwd") //collects passwords
+	
+	if password_file.has_permission("r") then
+		print(password_file)
+	end if
+	
+	if not password_file then exit("No Password File")
+	end if
+
