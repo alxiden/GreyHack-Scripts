@@ -1,4 +1,5 @@
 metaxploit = include_lib("/lib/metaxploit.so")
+cryptools = include_lib("/lib/crypto.so")
 
 address = params[0]
 exp = params[2]
@@ -52,9 +53,17 @@ if type == "computer" then
 	password_file = result.File("/etc/passwd") //collects passwords
 	
 	if password_file.has_permission("r") then
-		print(password_file)
+		listusers = password_file.get_content.split("\n")
+		for line in listusers
+			password = line.split(":")
+			textpass = cryptools.decipher(password[1])
+			print(password[0] + "=>" + textpass)		
+		end for	
+		
+	else
+		print("Permissions Error")
 	end if
-	
 	if not password_file then exit("No Password File")
 	end if
+
 
