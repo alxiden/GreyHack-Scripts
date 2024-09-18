@@ -1,0 +1,31 @@
+cryptools = include_lib("/lib/crypto.so") // import library containing all the "air" tools.
+
+// airmon
+get_shell.launch("/bin/airmon") // list all monitor capable device states
+device = user_input("Choose Interface: ") // ask for user to pick device
+cryptools.airmon("start", device) // start the device in monitor mode
+crypttools = include_lib("/lib/crypto.so")
+
+//iwlist
+print("Choose BSSID & ESSID (more PWR% is better)\n")
+get_shell.launch("/bin/iwlist", device)
+b = user_input("\nBSSID: ")
+e = user_input("\nESSID: ")
+acks = user_input("\nACKs (>7000): ").to_int
+print("\n")
+
+if acks < 7000 then acks = 7000 end if 
+
+// aireplay
+cryptools.aireplay(b, e, acks) // run aireplay with the user input from above
+print("\nGot Required amount of ACKs...")
+print("Waiting for file.cap to be written...\n")
+wait(5) // without this aircrack runs immediately and file.cap isnt written yet
+print("Cracking...\n")
+
+// aircrack
+capfile = current_path + "/file.cap" // set file.cap path
+get_shell.launch("/bin/aircrack", capfile) // aircrack the file and display result
+print("\n[-]Stopping device monitoring...\n")
+
+print("\n[-]Goodbye...\n")
