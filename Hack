@@ -50,12 +50,13 @@ if type == "computer" then
 		for folder in user_folders
 			bank_file = result.File("/home/"+folder.name+"/Config/Bank.txt")
 			Mail_file = result.File("/home/"+folder.name+"/Config/Mail.txt")
-			if bank_file.has_permission("r") then print("Bank "+ folder.name + ": " + bank_file.get_content)
-			if Mail_file.has_permission("r") then print("Mail " + folder.name + ": "+ Mail_file.get_content)
+			if bank_file.has_permission("r") then print("Bank "+ folder.name + ": " + bank_file.get_content) 
+		
+			if Mail_file.has_permission("r") then print("Mail " + folder.name + ": "+ Mail_file.get_content) 
+		
 		end for
 	end if
-end if
-	
+	password_file = result.File("/etc/passwd")
 	if password_file.has_permission("r") then
 		listusers = password_file.get_content.split("\n")
 		for line in listusers
@@ -63,9 +64,8 @@ end if
 			textpass = cryptools.decipher(password[1])
 			print(password[0] + "=>" + textpass)		
 		end for	
-		
 	else
 		print("Permissions Error")
 	end if
 	if not password_file then exit("No Password File")
-	
+	end if
