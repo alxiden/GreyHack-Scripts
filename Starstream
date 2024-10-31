@@ -45,9 +45,7 @@ scanner = function()
 		value = memory_scan.remove("decompiling source...")
 		value = value.remove("searching unsecure values...")
 		value = value.replace("\n","")
-		//print(value)
 		values = value.split("\.")
-		//print(values)
 		for v in values
 			if v == "" then
 				values.remove(values.indexOf(v))
