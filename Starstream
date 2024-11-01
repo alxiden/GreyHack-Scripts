@@ -89,10 +89,9 @@ hack = function()
 	
 	result = metaLib.overflow(mem, key)	
 	type = str(typeof(result))
-	print(type)
-	
+	//print(type)
 	if type == "number"  then
-		newpassword = user_input("Please enter a new password: ")
+		newpassword = user_input("Please enter additonal information: ")
 		result = metaLib.overflow(mem, key, newpassword)
 	else if type == "shell" then
 		result.start_terminal
@@ -129,7 +128,6 @@ hack = function()
 			print(file.name)
 		end for
 	end if
-
 end function
 
 if action == "-sr" or action == "-s" then
