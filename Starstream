@@ -3,22 +3,7 @@ cryptools = include_lib("/lib/crypto.so")
 
 value_tidy = []
 action = params[0]
-
-if params.len == 1 and action != "-h" then
-	print("Please add an IP address or use -h for the help guide")
-	exit()
-else if params.len == 2 then
-	ip_address = params[1]
-else if params.len == 3 then
-	ip_address = params[1]
-	port = params[2].to_int
-else
-	port = null
-end if
-
-if params.len == 2 then
-	ip_address = params[1]
-end if 
+ip_address = ""
 
 crack = function(hash = ip_address)
 	plain = cryptools.decipher(password)
@@ -30,13 +15,14 @@ scanner = function()
 	if action == "-sr" then
 		net_session = metaxploit.net_use(ip_address)
 	else
+		port = params[2].to_int
 		net_session = metaxploit.net_use(ip_address, port)
 	end if
 
 	if not net_session then exit("Error: No Connection")
 	
 	metaLib = net_session.dump_lib //gets the libary for scanning
-	print("--------Scanning--------")
+	print("------------Scanning------------")
 	scans = metaxploit.scan(metaLib) //scans the libary
 	for i in scans
 		value_tidy = []
@@ -44,6 +30,8 @@ scanner = function()
 		memory_scan = metaxploit.scan_address(metaLib, i)
 		value = memory_scan.remove("decompiling source...")
 		value = value.remove("searching unsecure values...")
+		value = value.replace(".so",",so")
+		value = value.replace("1.0.0","1,0,0.")
 		value = value.replace("\n","")
 		values = value.split("\.")
 		for v in values
@@ -54,37 +42,107 @@ scanner = function()
 				val = val.remove("Unsafe check: string copy in ")
 				val = val.remove(" Buffer overflow")
 				val = val.remove("</b>")
-				//print("V =" + val)
 				if val != "" then
 					value_tidy.push(val)
 				end if
 			end if
-			
 		end for
 		print(i)
 		print(value_tidy[0])
 		for num in range(1,value_tidy.len - 1)
-			print(value_tidy[num])
+			if value_tidy[num].indexOf("*") == null then
+				print("\n")
+				print(value_tidy[num])
+			else
+				print(value_tidy[num])
+			end if
 		end for
 		print("------------------------------------")
 	end for
 end function
 
-
-if action == "-h" then
-	print("The command should be starstream [action] [ip address] [port]")
+help = function()
+	print("The command should be starstream [action] [ip address] [port] [Memory Address] [Overflow Key]")
 	print("-h	Help")
 	print("-c	Crack Password")
 	print("-s	Scan Host")
 	print("-sr	Scan Router")
-end if
+	print("-hd	Hack Device")
+	print("-hr	Hack Router")
+end function
 
-if action == "-sr" or action == "-s" then 
+hack = function()
+	if action == "-hd" then
+		port = params[2].to_int
+		mem = params[3]
+		key = params[4]
+		net_session = metaxploit.net_use(ip_address, port)
+	else if action == "-hr" then
+		mem = params[2]
+		key = params[3]
+		net_session = metaxploit.net_use(ip_address)
+	end if
+
+	metaLib = net_session.dump_lib
+	
+	print("--------Testing Exsploit --------")
+	
+	result = metaLib.overflow(mem, key)	
+	type = str(typeof(result))
+	print(type)
+	
+	if type == "number"  then
+		newpassword = user_input("Please enter a new password: ")
+		result = metaLib.overflow(mem, key, newpassword)
+	else if type == "shell" then
+		result.start_terminal
+	else if type == "computer" then
+		password_file = result.File("/etc/passwd")
+		home_folder = result.File("/home")
+		if home_folder then
+			user_folders = home_folder.get_folders
+			for folder in user_folders
+				if folder.name != "guest" then
+					bank_file = result.File("/home/"+folder.name+"/Config/Bank.txt")
+					Mail_file = result.File("/home/"+folder.name+"/Config/Mail.txt")
+					if bank_file.has_permission("r") then print("Bank "+ folder.name + ": " + bank_file.get_content) 
+					if Mail_file.has_permission("r") then print("Mail " + folder.name + ": "+ Mail_file.get_content) 
+				end if
+			end for
+		end if
+		if password_file.has_permission("r") then
+			print("------------------------------------")
+			users = password_file.get_content.split("\n")
+			for line in users
+				if line != "" then
+					password = line.split(":")
+					print(password[0] + "=>" + password[1])
+				end if
+			end for 
+			print("------------------------------------")
+		else
+			print("Password Permission not Gained")
+		end if 
+	else if type == "file" then
+		files = result.get_files
+		for file in files
+			print(file.name)
+		end for
+	end if
+
+end function
+
+if action == "-sr" or action == "-s" then
+	ip_address = params[1] 
 	scanner
 else if action == "-c" then
+	ip_address = params[1]
 	crack
+else if action == "-hd" or action == "-hr" then
+	ip_address = params[1]
+	hack
+else
+	help
 end if
 	
 		
-
-
