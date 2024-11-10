@@ -56,12 +56,12 @@ scanner = function(ip_address)
 			end if
 		end for
 		print(i)
-		print(value_tidy[0])
+		//print(value_tidy[0])
 		for num in range(0,value_tidy.len - 1)
 			if value_tidy[num].indexOf("*") == null then
 				print("\n")
 				print(value_tidy[num])
-				exlist[i + "-" + str(num)] = value_tidy[num]
+				exlist[i + "_" + str(num)] = value_tidy[num]
 			else
 				print(value_tidy[num])
 			end if
