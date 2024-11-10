@@ -4,6 +4,7 @@ cryptools = include_lib("/lib/crypto.so")
 value_tidy = []
 action = params[0]
 ip_address = ""
+numbers = ["0","1","2","3","4","5","6","7","8","9"]
 
 crack = function(hash = ip_address)
 	plain = cryptools.decipher(password)
@@ -31,7 +32,12 @@ scanner = function()
 		value = memory_scan.remove("decompiling source...")
 		value = value.remove("searching unsecure values...")
 		value = value.replace(".so",",so")
-		value = value.replace("1.0.0","1,0,0.")
+		for a in numbers
+			for o in numbers
+				value = value.replace("1."+ o + "." + a, "1," + o + "," + a +".")
+			end for
+		end for
+		//value = value.replace("1.0.0","1,0,0.")
 		value = value.replace("\n","")
 		values = value.split("\.")
 		for v in values
@@ -50,13 +56,16 @@ scanner = function()
 		print(i)
 		print(value_tidy[0])
 		for num in range(1,value_tidy.len - 1)
+			key = null
 			if value_tidy[num].indexOf("*") == null then
 				print("\n")
 				print(value_tidy[num])
+				key = value_tidy[num]
 			else
 				print(value_tidy[num])
 			end if
 		end for
+
 		print("------------------------------------")
 	end for
 end function
@@ -105,7 +114,7 @@ hack = function()
 	
 	result = metaLib.overflow(mem, key)	
 	type = str(typeof(result))
-	print(type)
+	//print(type)
 	if type == "number" or type == "null" then
 		newpassword = user_input("Please enter additonal information: ")
 		result = metaLib.overflow(mem, key, newpassword)
