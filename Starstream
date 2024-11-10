@@ -71,6 +71,22 @@ help = function()
 	print("-hr	Hack Router")
 end function
 
+computer = function(result)
+	password_file = result.File("/etc/passwd")
+	home_folder = result.File("/home")
+		if home_folder then
+			user_folders = home_folder.get_folders
+			for folder in user_folders
+				if folder.name != "guest" then
+					bank_file = result.File("/home/"+folder.name+"/Config/Bank.txt")
+					Mail_file = result.File("/home/"+folder.name+"/Config/Mail.txt")
+					if bank_file.has_permission("r") then print("Bank "+ folder.name + ": " + bank_file.get_content) 
+					if Mail_file.has_permission("r") then print("Mail " + folder.name + ": "+ Mail_file.get_content) 
+				end if
+			end for
+		end if
+end function
+
 hack = function()
 	if action == "-hd" then
 		port = params[2].to_int
@@ -89,11 +105,14 @@ hack = function()
 	
 	result = metaLib.overflow(mem, key)	
 	type = str(typeof(result))
-	//print(type)
-	if type == "number"  then
+	print(type)
+	if type == "number" or type == "null" then
 		newpassword = user_input("Please enter additonal information: ")
 		result = metaLib.overflow(mem, key, newpassword)
-	else if type == "shell" then
+		if typeof(result) == "computer" then
+			computer(result)
+		end if
+	else if type == "shell" then 
 		result.start_terminal
 	else if type == "computer" then
 		password_file = result.File("/etc/passwd")
