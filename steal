@@ -1,0 +1,24 @@
+cryptools = include_lib("/lib/crypto.so")
+
+passwd = params[0]
+
+shell = get_shell("root",passwd)
+
+computer = shell.host_computer()
+
+folders = computer.File("/home")
+
+if folders then
+	user_folders = folders.get_folders
+	for folder in user_folders
+		bank_file = computer.File("/home/"+folder.name+"/Config/Bank.txt")
+		if bank_file != null then
+			if bank_file.has_permission("r") then 
+				content = bank_file.get_content
+				details = content.split(":")
+				plain = cryptools.decipher(details[1])
+				print(details[0]+ ":" + plain)
+			end if
+		end if
+	end for
+end if
