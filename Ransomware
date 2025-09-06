@@ -1,0 +1,14 @@
+if active_user != "root" then exit("Run as root.")
+
+cryptools = include_lib("/lib/crypto.so")
+
+pc = get_shell
+
+computer = shell.host_computer()
+folders = computer.File("/")
+
+if folders then
+	for folder in folders
+		ransome = folder.encrypt("/"+"folder.name", "GotYa")
+	end for
+end if
