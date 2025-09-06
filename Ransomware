@@ -10,6 +10,25 @@ folders = computer.File("/")
 if folders then
 	all_folders = folders.get_folders()
 	for folder in all_folders
-		ransome = cryptools.encrypt("/"+folder.name, "GotYa")
+		all_files = computer.File("/" + folder.name).get_files()
+		for file in all_files
+			ransom = cryptools.encrypt("/"+folder.name+"/"+file.name, "GotYa")
+		end for	
 	end for
+	bin = computer.File("/usr/bin")
+	if bin then	
+		all_files = computer.File("/usr/bin").get_files()
+		for file in all_files
+			ransom = cryptools.encrypt("/usr/bin/" + file.name)
+		end for
+	end if
+	home_folders = computer.File("/home").get_folders()
+	if home_folders then
+		for folder in home_folders
+			details = computer.File("/home/" + folder.name + "/Config").get_files()
+			for file in details
+				ransom = cryptools.encrypt("/home/" + folder.name + "/Config/" + file.name)
+			end for
+		end for
+	end if
 end if
