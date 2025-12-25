@@ -1,0 +1,35 @@
+metaxploit = include_lib("/lib/metaxploit.so")
+cryptools = include_lib("/lib/crypto.so")
+
+import_code("/bin/scan.src")
+
+if params.len > 3 then exit("Usage: autohack [addr] [port]")
+
+ip_addr = params[0]
+port = params[1].to_int
+
+targets = scanner(ip_addr, port)
+
+print(targets.len + " targets found, attempting to find shells")
+
+net_session = metaxploit.net_use(ip_addr, port)
+
+if not net_session then exit("No Connection")
+
+metaLib = net_session.dump_lib
+
+shells = {}
+
+for target in targets
+	exp = target.key
+	for key in target.value
+		result = metaLib.overflow(exp, key)
+	if typeof(result) == "shell" then
+		shells[exp] = key
+	end if
+end for
+end for
+
+print("Shells: ")
+print(shells)
+
