@@ -1,0 +1,164 @@
+metaxploit = include_lib("/lib/metaxploit.so")
+cryptools = include_lib("/lib/crypto.so")
+
+import_code("/bin/scan.src")
+
+if params.len > 3 then exit("Usage: autohack [addr] [port]")
+
+ip_addr = params[0]
+port = params[1].to_int
+
+targets = scanner(ip_addr, port)
+
+print(targets.len + " targets found, attempting to find shells")
+
+net_session = metaxploit.net_use(ip_addr, port)
+
+if not net_session then exit("No Connection")
+
+metaLib = net_session.dump_lib
+
+shells = {}
+banks = {}
+mail = {}
+users = {}
+
+for target in targets
+	exp = target.key
+	for key in target.value
+		result = metaLib.overflow(exp, key)
+		//print(typeof(result))
+	if typeof(result) == "shell" then
+		shell = ""
+		if result.host_computer.touch("/home/guest", "anonymous.dat") then
+			file = result.host_computer.File("/home/guest/anonymous.dat")
+			if not file then
+				print("File doesn't exist.")
+				exit()
+			end if
+			permission = file.owner
+			shell = key + " " + permission
+			file.delete
+			shells[exp] = shell
+		end if
+	end if
+	if typeof(result) == "computer" then
+		password_file = result.File("/etc/passwd")
+		home_folder = result.File("/home")
+		if home_folder then 
+			user_folders = home_folder.get_folders
+				for folder in user_folders
+					if folder.name != "guest" then
+						bank_file = result.File("/home/"+folder.name+"/Config/Bank.txt")
+						Mail_file = result.File("/home/"+folder.name+"/Config/Mail.txt")
+						if bank_file.has_permission("r") then banks[folder.name] = bank_file.get_content
+						if Mail_file.has_permission("r") then mail[folder.name] = Mail_file.get_content
+					end if	 
+				end for
+		end if
+		if password_file.has_permission("r") then
+			listusers = password_file.get_content.split("\n")
+				for line in listusers
+					if line != "" then
+						password = line.split(":")
+						users[password[0]] = password[1]
+					end if	
+				end for	
+		
+		else
+			print("Permissions Error")
+		end if
+		if not password_file then exit("No Password File") 
+	end if
+end for
+end for
+
+cracking = function()
+
+print("--------------Cracking Passwords--------------")
+
+if users != {} then
+	cracked_users = {}
+	for user in users
+		plain_password = cryptools.decipher(user.value)
+		cracked_users[user.key] = plain_password	
+	end for
+end if
+
+if banks != {} then
+	cracked_banks = {}
+	for bank in banks
+		details = bank.value.split(":")
+		plain_password = cryptools.decipher(details[1])
+		cracked_banks[details[0]] = plain_password	
+	end for
+end if
+
+if mail != {} then
+	cracked_mail = {}
+	for email in mail
+		details = email.value.split(":")
+		plain_password = cryptools.decipher(details[1])
+		cracked_mail[details[0]] = plain_password	
+	end for
+end if
+
+all_details = Cracked()
+
+end function
+
+Cracked = function()
+
+print("Banks:")
+print(cracked_banks)
+
+print("Mail:")
+print(cracked_mail)
+
+print("Users:")
+print(cracked_users)
+
+end function
+
+open_shell = function()
+print(shells)
+exp = user_input("Enter in the Memory Address:")
+key = user_input("Enter in the key:")
+result = metaLib.overflow(exp, key)
+
+result.start_terminal
+
+end function
+print(\n)
+print("------------------")
+print("Target Analysised")
+print("------------------")
+print("Shells: " + shells.len)
+print(shells)
+print("------------------")
+print("Users: " + users.len)
+print("------------------")
+print("Mail: " + mail.len)
+print("------------------")
+print("Banks: " + banks.len)
+print("------------------")
+
+while true
+
+print("Please select a option: ")
+print("1: Open Shell")
+print("2: Crack All Passwords")
+print("3: exit")
+
+option = user_input("Option: ")
+
+if option == "1" then
+	opendhell = open_shell
+else if option == "2" then
+	cracking = cracking
+else if option == "3" then
+	break
+else
+	print("Please select a valid option")
+end if
+end while
