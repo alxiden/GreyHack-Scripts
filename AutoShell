@@ -24,12 +24,25 @@ for target in targets
 	exp = target.key
 	for key in target.value
 		result = metaLib.overflow(exp, key)
+		print(typeof(result))
 	if typeof(result) == "shell" then
-		shells[exp] = key
+		shell = ""
+		if result.host_computer.touch("/home/guest", "anonymous.dat") then
+			file = result.host_computer.File("/home/guest/anonymous.dat")
+			if not file then
+				print("File doesn't exist.")
+				exit()
+			end if
+			shell = key + " " + file.owner
+			file.delete
+			shells[exp] = shell
+		end if
 	end if
 end for
 end for
 
 print("Shells: ")
 print(shells)
+
+
 
