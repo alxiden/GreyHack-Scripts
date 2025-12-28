@@ -73,6 +73,7 @@ for target in targets
 end for
 end for
 
+
 cracking = function()
 
 print("--------------Cracking Passwords--------------")
@@ -129,7 +130,7 @@ result = metaLib.overflow(exp, key)
 result.start_terminal
 
 end function
-print(\n)
+print("\n")
 print("------------------")
 print("Target Analysised")
 print("------------------")
