@@ -74,12 +74,10 @@ end for
 end for
 
 
-cracking = function()
+cracking_users = function()
 
-print("--------------Cracking Passwords--------------")
+print("--------------Cracking User Passwords--------------")
 cracked_users = {}
-cracked_banks = {}
-cracked_mail = {}
 
 if users != {} then
 	for user in users
@@ -89,13 +87,14 @@ if users != {} then
 	end for
 end if
 
-if banks != {} then
-	for bank in banks
-		details = bank.value.split(":")
-		plain_password = cryptools.decipher(details[1])
-		cracked_banks[details[0]] = plain_password	
-	end for
-end if
+print(cracked_users)
+
+end function
+
+cracking_mail = function()
+
+print("--------------Cracking Mail Passwords--------------")
+cracked_mail = {}
 
 if mail != {} then
 	for email in mail
@@ -105,30 +104,47 @@ if mail != {} then
 	end for
 end if
 
-all_details = Cracked(cracked_banks, cracked_mail, cracked_users)
+print(cracked_mail)
 
 end function
 
-Cracked = function(banks, mail, cuser)
+cracking_bank = function()
 
-print("Banks:")
-print(banks)
+print("--------------Cracking Bank Passwords--------------")
+cracked_banks = {}
 
-print("Mail:")
-print(mail)
+if banks != {} then
+	for bank in banks
+		details = bank.value.split(":")
+		plain_password = cryptools.decipher(details[1])
+		cracked_banks[details[0]] = plain_password	
+	end for
+end if
 
-print("Users:")
-print(cuser)
+print(cracked_banks)
 
 end function
+
 
 open_shell = function()
-print(shells)
-exp = user_input("Enter in the Memory Address:")
-key = user_input("Enter in the key:")
-result = metaLib.overflow(exp, key)
 
-result.start_terminal
+if shells.len != 1 then
+	print(shells)
+	exp = user_input("Enter in the Memory Address:")
+	key = user_input("Enter in the key:")
+	result = metaLib.overflow(exp, key)
+	result.start_terminal
+	
+else 
+	exp = shells[0]
+	split = shells[1].split(" ")
+	key = split[0]
+	result = metaLib.overflow(exp, key)
+	
+	result.start_terminal
+end if
+
+
 
 end function
 print("\n")
@@ -149,16 +165,22 @@ while true
 
 print("Please select a option: ")
 print("1: Open Shell")
-print("2: Crack All Passwords")
-print("3: exit")
+print("2: Crack Users")
+print("3: Crack Mail")
+print("4: Crack Banks")
+print("5: exit")
 
 option = user_input("Option: ")
 
 if option == "1" then
 	opendhell = open_shell
 else if option == "2" then
-	cracking = cracking
+	cracking = cracking_users
 else if option == "3" then
+	cracking = cracking_mail
+else if option == "4" then
+	cracking = cracking_banks
+else if option == "5" then
 	break
 else
 	print("Please select a valid option")
