@@ -84,6 +84,7 @@ cracked_mail = {}
 if users != {} then
 	for user in users
 		plain_password = cryptools.decipher(user.value)
+		print(user.key + ":"+ plain_password)
 		cracked_users[user.key] = plain_password	
 	end for
 end if
@@ -104,7 +105,7 @@ if mail != {} then
 	end for
 end if
 
-all_details = Cracked(cracked_users, cracked_banks, cracked_mail)
+all_details = Cracked(cracked_banks, cracked_mail, cracked_users)
 
 end function
 
