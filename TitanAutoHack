@@ -77,9 +77,11 @@ end for
 cracking = function()
 
 print("--------------Cracking Passwords--------------")
+cracked_users = {}
+cracked_banks = {}
+cracked_mail = {}
 
 if users != {} then
-	cracked_users = {}
 	for user in users
 		plain_password = cryptools.decipher(user.value)
 		cracked_users[user.key] = plain_password	
@@ -87,7 +89,6 @@ if users != {} then
 end if
 
 if banks != {} then
-	cracked_banks = {}
 	for bank in banks
 		details = bank.value.split(":")
 		plain_password = cryptools.decipher(details[1])
@@ -96,7 +97,6 @@ if banks != {} then
 end if
 
 if mail != {} then
-	cracked_mail = {}
 	for email in mail
 		details = email.value.split(":")
 		plain_password = cryptools.decipher(details[1])
@@ -104,20 +104,20 @@ if mail != {} then
 	end for
 end if
 
-all_details = Cracked()
+all_details = Cracked(cracked_users, cracked_banks, cracked_mail)
 
 end function
 
-Cracked = function()
+Cracked = function(banks, mail, cuser)
 
 print("Banks:")
-print(cracked_banks)
+print(banks)
 
 print("Mail:")
-print(cracked_mail)
+print(mail)
 
 print("Users:")
-print(cracked_users)
+print(cuser)
 
 end function
 
