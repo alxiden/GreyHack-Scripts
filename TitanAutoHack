@@ -56,7 +56,10 @@ for target in targets
 					end if	 
 				end for
 		end if
-		if password_file.has_permission("r") then
+		//print(typeof(password_file))
+		if typeof(password_file) != null then
+			pass = true
+		else if password_file.has_permission("r") then
 			listusers = password_file.get_content.split("\n")
 				for line in listusers
 					if line != "" then
@@ -68,7 +71,7 @@ for target in targets
 		else
 			print("Permissions Error")
 		end if
-		if not password_file then exit("No Password File") 
+		if not password_file then print("No Password File") 
 	end if
 end for
 end for
