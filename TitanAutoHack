@@ -131,20 +131,13 @@ end function
 
 open_shell = function()
 
-if shells.len != 1 then
+if shells.len != 0 then
 	print(shells)
 	exp = user_input("Enter in the Memory Address:")
-	key = user_input("Enter in the key:")
+	key = shells[exp]
 	result = metaLib.overflow(exp, key)
 	result.start_terminal
 	
-else 
-	exp = shells[0]
-	split = shells[1].split(" ")
-	key = split[0]
-	result = metaLib.overflow(exp, key)
-	
-	result.start_terminal
 end if
 
 
