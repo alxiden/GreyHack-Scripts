@@ -51,8 +51,13 @@ for target in targets
 					if folder.name != "guest" then
 						bank_file = result.File("/home/"+folder.name+"/Config/Bank.txt")
 						Mail_file = result.File("/home/"+folder.name+"/Config/Mail.txt")
-						if bank_file.has_permission("r") then banks[folder.name] = bank_file.get_content
-						if Mail_file.has_permission("r") then mail[folder.name] = Mail_file.get_content
+						print(typeof(bank_file))
+						if typeof(bank_file) != null then
+							pass = true
+						else
+							if bank_file.has_permission("r") then banks[folder.name] = bank_file.get_content
+							if Mail_file.has_permission("r") then mail[folder.name] = Mail_file.get_content
+						end if
 					end if	 
 				end for
 		end if
