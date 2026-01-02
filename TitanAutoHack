@@ -51,7 +51,7 @@ for target in targets
 					if folder.name != "guest" then
 						bank_file = result.File("/home/"+folder.name+"/Config/Bank.txt")
 						Mail_file = result.File("/home/"+folder.name+"/Config/Mail.txt")
-						print(typeof(bank_file))
+						//print(typeof(bank_file))
 						if typeof(bank_file) != null then
 							pass = true
 						else
