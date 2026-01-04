@@ -1,5 +1,16 @@
 if active_user != "root" then exit("Run as root.")
 
+aptClient = include_lib("/lib/aptclient.so")
+
+add_lib = function()
+	updt = aptClient.update
+	crypto = aptClient.install("crypto.so")
+end function
+
+aptClient = include_lib("/lib/aptclient.so")
+result = aptClient.add_repo("IP Addess",1542)
+libs = add_lib
+
 pc = get_shell
 computer = pc.host_computer()
 folders = computer.File("/")
@@ -29,3 +40,5 @@ if folders then
 		end for
 	end if
 end if
+
+
