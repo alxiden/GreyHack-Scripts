@@ -1,0 +1,13 @@
+add_lib = function()
+	updt = aptClient.update
+	meta = aptClient.install("metaxploit.so")
+	crypto = aptClient.install("crypto.so")
+	srcscan = aptClient.install("scan.src", "/bin")
+	titan = aptClient.install("titan")
+end function
+
+aptClient = include_lib("/lib/aptclient.so")
+result = aptClient.add_repo("IP Address",1542)
+libs = add_lib
+
+
