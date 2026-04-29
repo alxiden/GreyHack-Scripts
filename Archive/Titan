@@ -16,14 +16,9 @@ clean_memory_text = function(text)
 		if check != null then
 			rm_string = string.remove("Unsafe check: string copy in ")
 			rm_loop = rm_string.remove("Unsafe check: loop in array ")
-			string_splice = rm_loop[1:]
-			if string_splice[0] == "<" then
-				new_string = string_splice[1:]
-			else
-				new_string = string_splice
-			end if
-			print(new_string)
-			key_words.insert(0, new_string)
+			string_splice = rm_loop[2:]
+			print(string_splice)
+			key_words.insert(0, string_splice)
 		end if
 	end for
 	//print(key_words)
