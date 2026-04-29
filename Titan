@@ -1,0 +1,63 @@
+cryptools = include_lib("/lib/crypto.so")
+metaxploit = include_lib("/lib/metaxploit.so")
+
+if params.len > 3 then exit("Usage: titan [addr] [port]")
+
+ip_address = params[0]
+port = params[1].to_int
+
+clean_memory_text = function(text)
+	key_words = []
+	split_string = text.split("\.")
+	for string in split_string
+		//print("String: " + string)
+		check = string.indexOf("Unsafe check:")
+		//print("Position: " + check)
+		if check != null then
+			rm_string = string.remove("Unsafe check: string copy in ")
+			rm_loop = rm_string.remove("Unsafe check: loop in array ")
+			key_words = key_words + rm_loop
+		end if
+	end for
+	print(key_words)
+	return key_words
+end function
+
+scanner = function(ip, port = null)
+	exploits = {}
+	id = 0
+	if port == null then
+		net_session = metaxploit.net_use(ip)
+	else
+		net_session = metaxploit.net_use(ip, port)
+	end if
+
+	//Test Connection
+	if not net_session then exit("Error: Failed to connect!")
+
+	//libary collection
+	metaLib = net_session.dump_lib
+	//Libary scanning
+	print("------Scanning------")
+	scans = metaxploit.scan(metaLib)
+	//print(scans)
+	for scan in scans
+		memory = metaxploit.scan_address(metaLib,scan)
+		print(scan)
+		memory_words = clean_memory_text(memory)
+		exploits[scan] = memory_words
+		//print(scan + " " + memory)
+	end for	
+	print("------Scan Complete ------")
+	return exploits
+end function
+
+targets = scanner(ip_address, port)
+
+print(targets)
+
+//print(targets.len + " targets found, attempting to find shells")
+
+
+
+
