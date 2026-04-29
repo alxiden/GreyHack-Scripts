@@ -1,4 +1,5 @@
 crypto = include_lib("/lib/crypto.so")
+aptClient = include_lib("/lib/aptclient.so")
 
 shell = get_shell("root","alxiden")
 
@@ -14,8 +15,6 @@ if permissions(etc) == "-rw-r-----" then
 else
 	print("Error Removing Permissions")
 end if
-
-
 
 // Step 2: Get second WiFi
 
@@ -58,25 +57,31 @@ hasRepoService = function(router)
     for lanIp in router.devices_lan_ip
         ports = router.device_ports(lanIp)
         for port in ports
-			print(router.port_info(port))
+			//print(router.port_info(port))
             if router.port_info(port).split(" ")[0] == "repository" then return true
         end for
     end for
     return null
 end function
 
+get_repo = function(ip)
+    print(ip)
+	add = aptClient.add_repo(ip)
+	updt = aptClient.update
+	meta = aptClient.install("metaxploit.so")
+	crypto = aptClient.install("crypto.so")
+end function
+
 main = function()
     while true
         ip = randomIp
         router = getRouter(ip)
-        if hasRepoService(router) then
-			print("Repo found")
-			computer.add_repo(ip)
-			computer.show(ip)
-		end if
-			
-        exit(ip)
+        if not router then continue
+        if not hasRepoService(router) then continue
+		//repo = get_repo(ip)
+		return ip
     end while
 end function
-
 main
+
+get_repo(main)
