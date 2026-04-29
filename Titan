@@ -16,10 +16,12 @@ clean_memory_text = function(text)
 		if check != null then
 			rm_string = string.remove("Unsafe check: string copy in ")
 			rm_loop = rm_string.remove("Unsafe check: loop in array ")
-			key_words = key_words + rm_loop
+			string_splice = rm_loop[2:]
+			print(string_splice)
+			key_words.insert(0, string_splice)
 		end if
 	end for
-	print(key_words)
+	//print(key_words)
 	return key_words
 end function
 
@@ -43,7 +45,7 @@ scanner = function(ip, port = null)
 	//print(scans)
 	for scan in scans
 		memory = metaxploit.scan_address(metaLib,scan)
-		print(scan)
+		//print(scan)
 		memory_words = clean_memory_text(memory)
 		exploits[scan] = memory_words
 		//print(scan + " " + memory)
@@ -54,10 +56,9 @@ end function
 
 targets = scanner(ip_address, port)
 
-print(targets)
+//print(targets)
 
 //print(targets.len + " targets found, attempting to find shells")
-
 
 
 
