@@ -14,11 +14,26 @@ clean_memory_text = function(text)
 		check = string.indexOf("Unsafe check:")
 		//print("Position: " + check)
 		if check != null then
-			rm_string = string.remove("Unsafe check: string copy in ")
-			rm_loop = rm_string.remove("Unsafe check: loop in array ")
-			string_splice = rm_loop[2:]
-			print(string_splice)
-			key_words.insert(0, string_splice)
+			//print("Original String: " + string)
+			rm_string = string.indexOf("Unsafe check: string copy in ")
+			rm_loop = string.indexOf("Unsafe check: loop in array ")
+			//print("rm_string = " + rm_string)
+			//print("rm_loop = " + rm_loop)
+			if rm_string > rm_loop then
+				//print("rm_string active")
+				num = rm_string + 29
+				string_splice = string[num:]
+				//print("Cut String: " + string_splice)
+				key_words.insert(0, string_splice)
+				//print(key_words)
+			else if rm_loop > rm_string then
+				//print("rm_loop active")
+				num = rm_loop + 28
+				string_splice = string[num:]
+				//print("Cut String: " + string_splice)
+				key_words.insert(0, string_splice)
+				//print(key_words)
+			end if
 		end if
 	end for
 	//print(key_words)
@@ -56,9 +71,9 @@ end function
 
 targets = scanner(ip_address, port)
 
-//print(targets)
+print(targets)
 
-//print(targets.len + " targets found, attempting to find shells")
+print(targets.len + " targets found, attempting to find shells")
 
 
 
