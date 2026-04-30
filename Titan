@@ -6,30 +6,34 @@ if params.len > 3 then exit("Usage: titan [addr] [port]")
 ip_address = params[0]
 port = params[1].to_int
 
+
+
 clean_memory_text = function(text)
 	key_words = []
 	split_string = text.split("\.")
 	for string in split_string
 		//print("String: " + string)
-		check = string.indexOf("Unsafe check:")
+		rm_bold = string.remove("<b>")
+		rm_bold2= rm_bold.remove("</b>")
+		check = rm_bold2.indexOf("Unsafe check:")
 		//print("Position: " + check)
 		if check != null then
 			//print("Original String: " + string)
-			rm_string = string.indexOf("Unsafe check: string copy in ")
-			rm_loop = string.indexOf("Unsafe check: loop in array ")
+			rm_string = rm_bold2.indexOf("Unsafe check: string copy in ")
+			rm_loop = rm_bold2.indexOf("Unsafe check: loop in array ")
 			//print("rm_string = " + rm_string)
 			//print("rm_loop = " + rm_loop)
 			if rm_string > rm_loop then
 				//print("rm_string active")
 				num = rm_string + 29
-				string_splice = string[num:]
+				string_splice = rm_bold2[num:]
 				//print("Cut String: " + string_splice)
 				key_words.insert(0, string_splice)
 				//print(key_words)
 			else if rm_loop > rm_string then
 				//print("rm_loop active")
 				num = rm_loop + 28
-				string_splice = string[num:]
+				string_splice = rm_bold2[num:]
 				//print("Cut String: " + string_splice)
 				key_words.insert(0, string_splice)
 				//print(key_words)
@@ -43,17 +47,6 @@ end function
 scanner = function(ip, port = null)
 	exploits = {}
 	id = 0
-	if port == null then
-		net_session = metaxploit.net_use(ip)
-	else
-		net_session = metaxploit.net_use(ip, port)
-	end if
-
-	//Test Connection
-	if not net_session then exit("Error: Failed to connect!")
-
-	//libary collection
-	metaLib = net_session.dump_lib
 	//Libary scanning
 	print("------Scanning------")
 	scans = metaxploit.scan(metaLib)
@@ -69,11 +62,199 @@ scanner = function(ip, port = null)
 	return exploits
 end function
 
-targets = scanner(ip_address, port)
+net_session = metaxploit.net_use(ip_address, port)
 
-print(targets)
+//Test Connection
+if not net_session then exit("Error: Failed to connect!")
+
+//libary collection
+metaLib = net_session.dump_lib
+
+targets = scanner(ip_address, port)
 
 print(targets.len + " targets found, attempting to find shells")
 
+shells = {}
+banks = {}
+mail = {}
+users = {}
+password_reset = 0
 
+for target in targets
+	exp = target.key
+	for key in target.value
+		print("Memory: " + exp)
+		print("Key: " + key)
+		result = metaLib.overflow(exp, key)
+		//print(typeof(result))
+	if typeof(result) == "shell" then
+		shell = ""
+		if result.host_computer.touch("/home/guest", "anonymous.dat") then
+			file = result.host_computer.File("/home/guest/anonymous.dat")
+			if not file then
+				print("File doesn't exist.")
+			end if
+			permission = "unknown"
+			if file then
+				permission = file.owner
+				file.delete
+			end if
+			shell = key + " " + "User:" + permission
+			shells[exp] = shell
+		end if
+	end if
+	if typeof(result) == "computer" then
+		//print("Locating Password File")
+		password_file = result.File("/etc/passwd")
+		home_folder = result.File("/home")
+		//print(home_folder)
+		if home_folder then 
+			user_folders = home_folder.get_folders
+				for folder in user_folders
+					//print("Folder: " + folder.name)
+					if folder.name != "guest" then
+						bank_file = result.File("/home/"+folder.name+"/Config/Bank.txt")
+						Mail_file = result.File("/home/"+folder.name+"/Config/Mail.txt")
+						//print(typeof(bank_file))
+						if typeof(bank_file) == null then
+							pass = true
+						else
+							if bank_file.has_permission("r") then banks[folder.name] = bank_file.get_content
+							if Mail_file.has_permission("r") then mail[folder.name] = Mail_file.get_content
+						end if
+					end if	 
+				end for
+		end if
+		//print(typeof(password_file))
+		if typeof(password_file) == null then
+			pass = true
+		else if password_file.has_permission("r") then
+			listusers = password_file.get_content.split("\n")
+				for line in listusers
+					if line != "" then
+						password = line.split(":")
+						users[password[0]] = password[1]
+					end if	
+				end for	
+		else
+			print("Permissions Error")
+		end if
+		if not password_file then print("No Password File") 
+	end if
+	if typeof(result) == "number" then
+		exploit = metaLib.overflow(exp, key, "password")
+		password_reset = password_reset + 1
+		//print("Users password changed")
+	end if
+end for
+end for
+
+
+cracking_users = function()
+
+print("--------------Cracking User Passwords--------------")
+cracked_users = {}
+
+if users != {} then
+	for user in users
+		plain_password = cryptools.decipher(user.value)
+		print(user.key + ":"+ plain_password)
+		cracked_users[user.key] = plain_password	
+	end for
+end if
+
+print(cracked_users)
+
+end function
+
+cracking_mail = function()
+
+print("--------------Cracking Mail Passwords--------------")
+cracked_mail = {}
+
+if mail != {} then
+	for email in mail
+		details = email.value.split(":")
+		plain_password = cryptools.decipher(details[1])
+		cracked_mail[details[0]] = plain_password	
+	end for
+end if
+
+print(cracked_mail)
+
+end function
+
+cracking_bank = function()
+
+print("--------------Cracking Bank Passwords--------------")
+cracked_banks = {}
+
+if banks != {} then
+	for bank in banks
+		details = bank.value.split(":")
+		plain_password = cryptools.decipher(details[1])
+		cracked_banks[details[0]] = plain_password	
+	end for
+end if
+
+print(cracked_banks)
+
+end function
+
+
+open_shell = function()
+
+if shells.len != 0 then
+	print(shells)
+	exp = user_input("Enter in the Memory Address:")
+	value = shells[exp].split(" ")
+	key = value[0]
+	result = metaLib.overflow(exp, key)
+	result.start_terminal
+	
+end if
+
+
+
+end function
+print("\n")
+print("------------------")
+print("Target Analysised")
+print("------------------")
+print("Shells: " + shells.len)
+print(shells)
+print("------------------")
+print("Users: " + users.len)
+print("------------------")
+print("Mail: " + mail.len)
+print("------------------")
+print("Banks: " + banks.len)
+print("------------------")
+print("Accounts Reset: " + password_reset)
+print("------------------")
+while true
+
+print("Please select a option: ")
+print("1: Open Shell")
+print("2: Crack Users")
+print("3: Crack Mail")
+print("4: Crack Banks")
+print("5: exit")
+
+option = user_input("Option: ")
+
+if option == "1" then
+	opendhell = open_shell
+else if option == "2" then
+	cracking = cracking_users
+else if option == "3" then
+	cracking = cracking_mail
+else if option == "4" then
+	cracking = cracking_bank
+else if option == "5" then
+	break
+else
+	print("Please select a valid option")
+end if
+end while
 
